@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <template>
 <div id="app">
 <AuthComponent v-if="!user" @login="handleLogin" />
@@ -47,3 +48,7 @@ body {
 font-family: Arial, sans-serif;
 }
 </style>
+=======
+# Site-MicroTarefas
+Site MicroTarefas 
+>>>>>>> 61d83e0a7425853181b0bfb6fa403ec2c01556dd
