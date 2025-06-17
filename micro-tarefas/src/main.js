@@ -1,13 +1,14 @@
-// src/main.js
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
-import './firebase-config'
-import './style.css'
+import { auth } from './firebase-config'
 
+let app
 
-
-const app = createApp(App)  // Agora "app" é criado antes
-
-app.use(router)
-app.mount('#app')
+auth.onAuthStateChanged(() => {
+  if (!app) {
+    app = createApp(App)
+    app.use(router)
+    app.mount('#app')
+  }
+})

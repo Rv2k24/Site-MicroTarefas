@@ -16,19 +16,26 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'    // importar router
 import { useAuth } from '../composables/useAuth'
 
+const router = useRouter()
 const { user, error, signUp, signIn, logout } = useAuth()
 
 const email = ref('')
 const password = ref('')
 
 const handleSignUp = async () => {
-  await signUp(email.value, password.value)
+  const newUser = await signUp(email.value, password.value)
+  if (newUser) {
+    router.push('/tarefas')              // redireciona após cadastro
+  }
 }
 
 const handleSignIn = async () => {
-  await signIn(email.value, password.value)
+  const loggedUser = await signIn(email.value, password.value)
+  if (loggedUser) {
+    router.push('/tarefas')              // redireciona após login
+  }
 }
 </script>
-

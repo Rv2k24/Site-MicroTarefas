@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyB0CHiDonzbTYEWjGSbWIYsEVb0Kl4_5uM",
   authDomain: "sitemicrotarefas.firebaseapp.com",
   projectId: "sitemicrotarefas",
-  storageBucket: "sitemicrotarefas.firebasestorage.app",
+  storageBucket: "sitemicrotarefas.appspot.com",
   messagingSenderId: "1026346149541",
   appId: "1:1026346149541:web:a546e1e91092835654cf4c",
   measurementId: "G-5PDKRD3HXJ"

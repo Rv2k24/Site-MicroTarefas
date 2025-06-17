@@ -1,213 +1,122 @@
 <template>
-  <div class="tarefas-container">
+  <div class="tasks-container">
     <h2>Suas Tarefas</h2>
 
-    <form @submit.prevent="adicionarTarefa">
-      <input
-        v-model="novaTarefa"
-        placeholder="Digite uma nova tarefa"
-        required
-        maxlength="100"
-      />
+    <form @submit.prevent="addTask">
+      <input v-model="newTask" placeholder="Nova tarefa" />
       <button type="submit">Adicionar</button>
     </form>
 
-    <ul v-if="tarefas.length">
-      <li
-        v-for="tarefa in tarefas"
-        :key="tarefa.id"
-        :class="{ concluida: tarefa.concluida }"
-      >
-        <label>
-          <input
-            type="checkbox"
-            v-model="tarefa.concluida"
-            @change="atualizarTarefa(tarefa)"
-          />
-          {{ tarefa.texto }}
-        </label>
-        <button @click="removerTarefa(tarefa.id)">Excluir</button>
+    <ul>
+      <li v-for="task in tasks" :key="task.id">
+        <span :style="{ textDecoration: task.completed ? 'line-through' : 'none' }">
+          {{ task.text }}
+        </span>
+        <button @click="toggleComplete(task)">✓</button>
+        <button @click="deleteTask(task.id)">🗑️</button>
       </li>
     </ul>
 
-    <p v-else>Nenhuma tarefa ainda.</p>
-
-    <button @click="handleLogout" class="logout-btn">Sair</button>
+    <button @click="logout">Sair</button>
   </div>
 </template>
 
-<script>
-import { ref, onMounted } from 'vue'
-import { getAuth, signOut } from 'firebase/auth'
+<script setup>
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-
-import {
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy
-} from 'firebase/firestore'
-
+import { useAuth } from '../composables/useAuth'
 import { db } from '../firebase-config'
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore'
 
-export default {
-  setup() {
-    const auth = getAuth()
-    const router = useRouter()
-    const usuario = auth.currentUser
+const router = useRouter()
+const { user, logout } = useAuth()
 
-    const novaTarefa = ref('')
-    const tarefas = ref([])
+const tasks = ref([])
+const newTask = ref('')
 
-    if (!usuario) {
-      router.push('/login')
-    }
-
-    const tarefasCollection = collection(db, 'tarefas')
-
-    // Buscar tarefas do usuário atual e escutar atualizações em tempo real
-    onMounted(() => {
-      const q = query(
-        tarefasCollection,
-        where('uid', '==', usuario.uid),
-        orderBy('createdAt', 'desc')
-      )
-
-      onSnapshot(q, (querySnapshot) => {
-        const lista = []
-        querySnapshot.forEach(docSnap => {
-          lista.push({ id: docSnap.id, ...docSnap.data() })
-        })
-        tarefas.value = lista
-      })
-    })
-
-    async function adicionarTarefa() {
-      if (!novaTarefa.value.trim()) return
-
-      await addDoc(tarefasCollection, {
-        texto: novaTarefa.value.trim(),
-        concluida: false,
-        uid: usuario.uid,
-        createdAt: new Date()
-      })
-
-      novaTarefa.value = ''
-    }
-
-    async function atualizarTarefa(tarefa) {
-      const tarefaDoc = doc(db, 'tarefas', tarefa.id)
-      await updateDoc(tarefaDoc, {
-        concluida: tarefa.concluida
-      })
-    }
-
-    async function removerTarefa(id) {
-      const tarefaDoc = doc(db, 'tarefas', id)
-      await deleteDoc(tarefaDoc)
-    }
-
-    async function handleLogout() {
-      try {
-        await signOut(auth)
-        router.push('/login')
-      } catch (e) {
-        alert('Erro ao sair: ' + e.message)
-      }
-    }
-
-    return {
-      novaTarefa,
-      tarefas,
-      adicionarTarefa,
-      atualizarTarefa,
-      removerTarefa,
-      handleLogout
-    }
-  }
+const loadTasks = async () => {
+  if (!user.value) return
+  tasks.value = []
+  const q = query(
+    collection(db, 'tasks'),
+    where('userId', '==', user.value.uid)
+  )
+  const querySnapshot = await getDocs(q)
+  querySnapshot.forEach(docSnap => {
+    tasks.value.push({ id: docSnap.id, ...docSnap.data() })
+  })
 }
+
+const addTask = async () => {
+  if (newTask.value.trim() === '') return
+  await addDoc(collection(db, 'tasks'), {
+    text: newTask.value,
+    completed: false,
+    userId: user.value.uid
+  })
+  newTask.value = ''
+  await loadTasks()
+}
+
+const toggleComplete = async (task) => {
+  const taskRef = doc(db, 'tasks', task.id)
+  await updateDoc(taskRef, { completed: !task.completed })
+  await loadTasks()
+}
+
+const deleteTask = async (id) => {
+  await deleteDoc(doc(db, 'tasks', id))
+  await loadTasks()
+}
+
+const handleLogout = async () => {
+  await logout()
+  router.push('/login')
+}
+
+// Carrega tarefas quando componente monta e se usuário mudar
+onMounted(loadTasks)
+watch(user, (newUser) => {
+  if (newUser) {
+    loadTasks()
+  } else {
+    router.push('/login')
+  }
+})
 </script>
 
 <style scoped>
-.tarefas-container {
+.tasks-container {
   max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: Arial, sans-serif;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-
 form {
   display: flex;
   gap: 0.5rem;
 }
-
-input[type='text'],
-input[type='email'],
-input[type='password'],
 input {
-  flex: 1;
+  flex-grow: 1;
   padding: 0.5rem;
   font-size: 1rem;
 }
-
 button {
   padding: 0.5rem 1rem;
-  background-color: #1976d2;
-  color: white;
-  border: none;
   cursor: pointer;
-  font-size: 1rem;
 }
-
-button:hover {
-  background-color: #1565c0;
-}
-
 ul {
   list-style: none;
-  padding-left: 0;
-  margin-top: 1rem;
+  padding: 0;
 }
-
 li {
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #ddd;
+  gap: 0.5rem;
 }
-
-li.concluida label {
-  text-decoration: line-through;
-  color: #888;
-}
-
-li label {
-  cursor: pointer;
-  flex: 1;
-}
-
-li button {
-  background-color: #d32f2f;
-  margin-left: 1rem;
-}
-
-li button:hover {
-  background-color: #b71c1c;
-}
-
-.logout-btn {
-  margin-top: 2rem;
-  background-color: #d32f2f;
-  width: 100%;
-}
-
-.logout-btn:hover {
-  background-color: #b71c1c;
+li span {
+  flex-grow: 1;
 }
 </style>

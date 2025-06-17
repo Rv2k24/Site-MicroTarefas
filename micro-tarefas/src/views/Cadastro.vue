@@ -1,117 +1,58 @@
-<!-- src/views/Cadastro.vue -->
 <template>
-  <div class="cadastro-container">
+  <div class="auth-container">
     <h2>Cadastro</h2>
-    <form @submit.prevent="handleCadastro">
-      <label for="email">Email:</label>
-      <input id="email" v-model="email" type="email" required />
 
-      <label for="password">Senha:</label>
-      <input id="password" v-model="password" type="password" required minlength="6" />
+    <input v-model="email" type="email" placeholder="Email" />
+    <input v-model="password" type="password" placeholder="Senha" />
 
-      <button type="submit">Criar Conta</button>
-    </form>
+    <button @click="handleSignUp">Cadastrar</button>
 
-    <p v-if="error" class="error">{{ error }}</p>
-    <p v-if="success" class="success">{{ success }}</p>
+    <p class="error" v-if="error">{{ error }}</p>
 
     <p>
-      Já tem conta?
-      <router-link to="/login">Faça login aqui</router-link>
+      Já tem conta? 
+      <router-link to="/login">Faça login</router-link>
     </p>
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
+<script setup>
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
 
-export default {
-  setup() {
-    const email = ref('')
-    const password = ref('')
-    const error = ref(null)
-    const success = ref(null)
-    const router = useRouter()
-    const auth = getAuth()
+const router = useRouter()
+const { user, error, signUp } = useAuth()
 
-    async function handleCadastro() {
-      error.value = null
-      success.value = null
+const email = ref('')
+const password = ref('')
 
-      try {
-        await createUserWithEmailAndPassword(auth, email.value, password.value)
-        success.value = 'Conta criada com sucesso! Redirecionando para login...'
-
-        setTimeout(() => {
-          router.push('/login')
-        }, 2000)
-      } catch (e) {
-        if (e.code === 'auth/email-already-in-use') {
-          error.value = 'Este email já está em uso.'
-        } else if (e.code === 'auth/invalid-email') {
-          error.value = 'Email inválido.'
-        } else if (e.code === 'auth/weak-password') {
-          error.value = 'Senha muito fraca. Use no mínimo 6 caracteres.'
-        } else {
-          error.value = 'Erro ao criar conta: ' + e.message
-        }
-      }
-    }
-
-    return {
-      email,
-      password,
-      error,
-      success,
-      handleCadastro
-    }
-  }
+const handleSignUp = async () => {
+  await signUp(email.value, password.value)
 }
+
+// Redireciona se já estiver logado
+watch(user, (newUser) => {
+  if (newUser) router.push('/tarefas')
+})
 </script>
 
 <style scoped>
-.cadastro-container {
+.auth-container {
   max-width: 320px;
-  margin: 0 auto;
-  padding: 1rem;
-  font-family: Arial, sans-serif;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-
-label {
-  display: block;
-  margin-top: 1rem;
+input, button {
+  padding: 0.5rem;
+  font-size: 1rem;
 }
-
-input {
-  width: 100%;
-  padding: 0.4rem;
-  margin-top: 0.2rem;
-  box-sizing: border-box;
-}
-
 button {
-  margin-top: 1.5rem;
-  width: 100%;
-  padding: 0.6rem;
-  background-color: #388e3c;
-  color: white;
-  border: none;
   cursor: pointer;
 }
-
-button:hover {
-  background-color: #2e7d32;
-}
-
 .error {
   color: red;
-  margin-top: 1rem;
-}
-
-.success {
-  color: green;
-  margin-top: 1rem;
 }
 </style>

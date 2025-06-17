@@ -1,79 +1,219 @@
+/* Reset básico e fonte */
+* {
+  box-sizing: border-box;
+}
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --color-bg-light: #ffffff;
+  --color-bg-dark: #242424;
+  --color-text-light: #213547;
+  --color-text-dark: rgba(255, 255, 255, 0.87);
+  --color-primary: #646cff;
+  --color-primary-hover: #535bf2;
+  --color-btn-bg-light: #f9f9f9;
+  --color-btn-bg-dark: #1a1a1a;
+  --color-btn-hover-border: var(--color-primary);
+  --color-error: #d32f2f;
+  --color-error-dark: #ff6f6f;
+  --color-border: #ddd;
+  --font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
-}
-
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-dark);
+  }
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    background-color: var(--color-bg-light);
+    color: var(--color-text-light);
   }
-  a:hover {
-    color: #747bff;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: var(--font-family);
+  line-height: 1.5;
+  font-weight: 400;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-light);
   }
+}
+
+/* Container geral para páginas */
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: transparent;
+}
+
+/* Titulos */
+h1, h2 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* Links */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Formulários */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+input[type='text'],
+input[type='email'],
+input[type='password'],
+input,
+textarea {
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: transparent;
+  color: inherit;
+  transition: border-color 0.3s ease;
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='password']:focus,
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Botões */
+button {
+  padding: 0.75rem 1.2rem;
+  background-color: var(--color-btn-bg-dark);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--color-text-dark);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+button:hover {
+  border-color: var(--color-btn-hover-border);
+  background-color: var(--color-btn-bg-dark);
+}
+
+@media (prefers-color-scheme: light) {
   button {
-    background-color: #f9f9f9;
+    background-color: var(--color-btn-bg-light);
+    color: var(--color-text-light);
+  }
+}
+
+/* Erros */
+.error {
+  color: var(--color-error);
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* Lista de tarefas */
+ul {
+  list-style: none;
+  padding: 0;
+  margin-top: 1.5rem;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+li label {
+  cursor: pointer;
+  flex: 1;
+  user-select: none;
+}
+
+li.concluida label {
+  text-decoration: line-through;
+  color: #888;
+}
+
+/* Checkbox */
+input[type='checkbox'] {
+  margin-right: 0.8rem;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+/* Botão excluir tarefa */
+li button {
+  background-color: var(--color-error);
+  color: white;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+li button:hover {
+  background-color: #b71c1c;
+}
+
+/* Botão logout */
+.logout-btn {
+  margin-top: 2rem;
+  width: 100%;
+  background-color: var(--color-error);
+  color: white;
+  font-weight: 600;
+}
+
+.logout-btn:hover {
+  background-color: #b71c1c;
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
   }
 }

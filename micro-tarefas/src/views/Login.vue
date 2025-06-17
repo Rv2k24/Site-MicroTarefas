@@ -1,102 +1,58 @@
 <template>
-  <div class="login-container">
+  <div class="auth-container">
     <h2>Login</h2>
-    <form @submit.prevent="handleLogin">
-      <label for="email">Email:</label>
-      <input id="email" v-model="email" type="email" required />
 
-      <label for="password">Senha:</label>
-      <input id="password" v-model="password" type="password" required />
+    <input v-model="email" type="email" placeholder="Email" />
+    <input v-model="password" type="password" placeholder="Senha" />
 
-      <button type="submit">Entrar</button>
-    </form>
+    <button @click="handleLogin">Entrar</button>
 
-    <p v-if="error" class="error">{{ error }}</p>
+    <p class="error" v-if="error">{{ error }}</p>
 
     <p>
-      Não tem conta?
-      <router-link to="/cadastro">Cadastre-se aqui</router-link>
+      Não tem conta? 
+      <router-link to="/cadastro">Cadastre-se</router-link>
     </p>
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth'
+<script setup>
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
 
-export default {
-  setup() {
-    const email = ref('')
-    const password = ref('')
-    const error = ref(null)
-    const router = useRouter()
-    const auth = getAuth()
+const router = useRouter()
+const { user, error, signIn } = useAuth()
 
-    async function handleLogin() {
-      error.value = null
-      try {
-        await signInWithEmailAndPassword(auth, email.value, password.value)
-        router.push('/tarefas')
-      } catch (e) {
-        if (e.code === 'auth/user-not-found') {
-          error.value = 'Usuário não encontrado.'
-        } else if (e.code === 'auth/wrong-password') {
-          error.value = 'Senha incorreta.'
-        } else if (e.code === 'auth/invalid-email') {
-          error.value = 'Email inválido.'
-        } else {
-          error.value = 'Erro ao tentar logar: ' + e.message
-        }
-      }
-    }
+const email = ref('')
+const password = ref('')
 
-    return {
-      email,
-      password,
-      error,
-      handleLogin
-    }
-  }
+const handleLogin = async () => {
+  await signIn(email.value, password.value)
 }
+
+// Redireciona se já estiver logado
+watch(user, (newUser) => {
+  if (newUser) router.push('/tarefas')
+})
 </script>
 
 <style scoped>
-.login-container {
+.auth-container {
   max-width: 320px;
-  margin: 0 auto;
-  padding: 1rem;
-  font-family: Arial, sans-serif;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
-
-label {
-  display: block;
-  margin-top: 1rem;
+input, button {
+  padding: 0.5rem;
+  font-size: 1rem;
 }
-
-input {
-  width: 100%;
-  padding: 0.4rem;
-  margin-top: 0.2rem;
-  box-sizing: border-box;
-}
-
 button {
-  margin-top: 1.5rem;
-  width: 100%;
-  padding: 0.6rem;
-  background-color: #1976d2;
-  color: white;
-  border: none;
   cursor: pointer;
 }
-
-button:hover {
-  background-color: #1565c0;
-}
-
 .error {
   color: red;
-  margin-top: 1rem;
 }
 </style>
